@@ -1,3 +1,4 @@
+// include/llace/builder/c64.h
 #ifndef LLACE_BUILDER_C64_H
 #define LLACE_BUILDER_C64_H
 
@@ -11,15 +12,15 @@
 extern "C" {
 #endif
 
-// construct default types for C
-void llace_builderc64_types(llace_module_t *module);
+// construct default types for C on 64-bit systems
 // constructs following types:
 // bool, char, unsigned char, short, unsigned short,
 // int, unsigned int, long, unsigned long, long long, unsigned long long
 // int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t
-// float, double, long double
+// float, double, long double, void
+llace_error_t llace_builderc64_types(llace_module_t *module);
 
-// get a defualt c type by name
+// get a default c type by name
 // name follows the C standard naming convention
 // e.g. "int", "unsigned long", "float", "double"
 // no space before no space after
@@ -31,4 +32,3 @@ llace_type_t *llace_builderc64_gettype(llace_module_t *module, const char *name)
 #endif
 
 #endif // LLACE_BUILDER_C64_H
-
