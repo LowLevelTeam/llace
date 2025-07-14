@@ -1,0 +1,11 @@
+# C Makefile project
+# Ignore build artifacts and temporary files
+*.o
+*.a
+lib/
+obj/
+bin/
+*.out
+
+mate
+build/
