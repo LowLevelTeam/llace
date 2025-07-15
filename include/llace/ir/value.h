@@ -28,7 +28,7 @@ typedef struct llace_value {
     // void _void;
     struct {
       llace_typeref_t type; // Type of the constant value
-      llace_handle_t data; // Pointer to the constant data (e.g., integer, float)
+      llace_item_t data; // Pointer to the constant data (e.g., integer, float)
     } _const; // Constant  (LLACE_VALUE_CONST)
     llace_varref_t _var; // Variable Reference (LLACE_VALUE_VARIABLE)
     llace_globalref_t _glob; // Global Reference (LLACE_VALUE_GLOBAL)
@@ -38,20 +38,7 @@ typedef struct llace_value {
   };
 } llace_value_t;
 
-/** 
-* @param val uninitalized llace_value_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
 llace_error_t llace_value_init(llace_value_t *val);
-
-/** 
-* @param val empty llace_value_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
 llace_error_t llace_value_destroy(llace_value_t *val);
 
 // ================================================ Builder ================================================ //

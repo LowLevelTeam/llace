@@ -23,6 +23,8 @@
 extern "C" {
 #endif
 
+#include <llace/log.h>
+
 // ================ Error ================ //
 
 typedef enum {
@@ -48,53 +50,7 @@ typedef enum {
 
 const char *llace_error_str(llace_error_t error);
 
-// ================ Memory Management ================ //
-
-/**
- * Initialize the LLACE library including memory management.
- * This must be called before using any other LLACE functions.
- * 
- * @param initial_memory_size Initial size for the memory pool (0 for default)
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_init(size_t initial_memory_size);
-
-/**
- * Cleanup and shutdown the LLACE library.
- * This will free all allocated memory and invalidate all handles.
- */
-void llace_cleanup(void);
-
-/**
- * Check if the LLACE library has been initialized.
- * 
- * @return true if initialized, false otherwise
- */
-bool llace_is_initialized(void);
-
-// ================ Library Information ================ //
-
-typedef struct {
-  size_t memory_pool_size;
-  size_t memory_used;
-  size_t active_allocations;
-  size_t compactions_performed;
-  const char *build_date;
-  const char *build_config;
-} llace_info_t;
-
-/**
- * Get information about the LLACE library instance.
- * 
- * @param info Output parameter for library information
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_get_info(llace_info_t *info);
-
-/**
- * Print library information to stdout.
- */
-void llace_print_info(void);
+#define LLACE_RUNCHECK(func) do { llace_error_t err = func; if (err != LLACE_ERROR_NONE) return err; } while (0);
 
 #ifdef __cplusplus
 }

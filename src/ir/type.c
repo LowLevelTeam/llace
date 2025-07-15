@@ -5,8 +5,11 @@
 
 
 llace_error_t llace_type_init(llace_type_t *type) {
-  if (!type) return LLACE_ERROR_BADARG;
-  
+  if (!type) {
+    LLACE_LOG_ERROR("Type is %p", type);
+    return LLACE_ERROR_BADARG;
+  }
+
   memset(type, 0, sizeof(llace_type_t));
   type->name = 0;
   type->kind = LLACE_TYPE_VOID;
@@ -17,223 +20,101 @@ llace_error_t llace_type_init(llace_type_t *type) {
 }
 
 llace_error_t llace_type_destroy(llace_type_t *type) {
-  if (!type) return LLACE_ERROR_BADARG;
+  if (!type) {
+    LLACE_LOG_ERROR("Type is %p", type);
+    return LLACE_ERROR_BADARG;
+  }
+
+  switch (type->kind) {
+    case LLACE_TYPE_VOID:
+    case LLACE_TYPE_INT:
+    case LLACE_TYPE_UNT:
+    case LLACE_TYPE_FLOAT:
+    case LLACE_TYPE_PTR:
+    case LLACE_TYPE_VPTR:
+    case LLACE_TYPE_VARADIC:
+    case LLACE_TYPE_ARRAY:
+      break;
+    case LLACE_TYPE_STRUCT:
+    case LLACE_TYPE_UNION:
+      LLACE_FREE_ARRAY(type->_composite.members);
+      break;
+    case LLACE_TYPE_FUNCTION:
+      LLACE_FREE_ARRAY(type->_func.params);
+      LLACE_FREE_ARRAY(type->_func.returns);
+      break;
+  };
+
   memset(type, 0, sizeof(llace_type_t));
   return LLACE_ERROR_NONE;
 }
 
-// ================ Type Builders ================ //
+// ================ Building ================ //
 
-llace_error_t llace_type_void(llace_type_t *type) {
-  if (!type) return LLACE_ERROR_BADARG;
-  
-  type->kind = LLACE_TYPE_VOID;
-  type->size = 0;
-  type->alignment = 1;
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_int(llace_type_t *type, unsigned long bits) {
-  if (!type || bits == 0) return LLACE_ERROR_BADARG;
-  
-  type->kind = LLACE_TYPE_INT;
-  type->_int = bits;
-  uint64_t size = (bits + 7) / 8;
-  type->size = size;
-
-  if (size == 0) type->alignment = 1;
-  else if (size == 1) type->alignment = 1;
-  else {
-    if ((size & (size - 1)) == 0) type->alignment = size; // If already a power of 2, use size as alignment
-    else type->alignment = 1ULL << (64 - __builtin_clzll(size)); // Count leading zeros and calculate next power of 2
+llace_error_t llace_build_type(llace_type_builder_t *builder, llace_type_t *dest) {
+  if (!builder) {
+    LLACE_LOG_ERROR("Builder is %p", builder);
+    return LLACE_ERROR_BADARG;
   }
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_uint(llace_type_t *type, unsigned long bits) {
-  if (!type || bits == 0) return LLACE_ERROR_BADARG;
-  
-  type->kind = LLACE_TYPE_UNT;
-  type->_unt = bits;
-  uint64_t size = (bits + 7) / 8;
-  type->size = size;
 
-  if (size == 0) type->alignment = 1;
-  else if (size == 1) type->alignment = 1;
-  else {
-    if ((size & (size - 1)) == 0) type->alignment = size; // If already a power of 2, use size as alignment
-    else type->alignment = 1ULL << (64 - __builtin_clzll(size)); // Count leading zeros and calculate next power of 2
-  }
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_float(llace_type_t *type, unsigned long mantissa, unsigned long exponent) {
-  if (!type || mantissa == 0 || exponent == 0) return LLACE_ERROR_BADARG;
-  
-  type->kind = LLACE_TYPE_FLOAT;
-  type->_float.mantissa = mantissa;
-  type->_float.exponent = exponent;
-  
-  uint64_t size = (mantissa + exponent + 8) / 8; // (mantissa + exponenet + 1 + 7) / 8
-
-  if (size == 0) type->alignment = 1;
-  else if (size == 1) type->alignment = 1;
-  else {
-    if ((size & (size - 1)) == 0) type->alignment = size; // If already a power of 2, use size as alignment
-    else type->alignment = 1ULL << (64 - __builtin_clzll(size)); // Count leading zeros and calculate next power of 2
-  }
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_ptr(llace_type_t *type, llace_typeref_t pointee_type, size_t depth) {
-  if (!type || depth == 0) return LLACE_ERROR_BADARG;
-  
-  type->kind = LLACE_TYPE_PTR;
-  type->_ptr.type = pointee_type;
-  type->_ptr.depth = depth;
-  type->size = sizeof(void*);
-  type->alignment = sizeof(void*);
-  
-  return LLACE_ERROR_NONE;
-}
-
-llace_error_t llace_type_add_void(llace_module_t *module, llace_typeref_t *typeref, const char *name) {
-  if (!module) return LLACE_ERROR_BADARG;
-  llace_error_t err;
   llace_type_t type;
 
-  err = llace_type_init(&type);
-  if (err != LLACE_ERROR_NONE) return err;
+  LLACE_RUNCHECK(llace_type_init(&type));
 
-  err = llace_type_void(&type);
-  if (err != LLACE_ERROR_NONE) return err;
+  type.kind = builder->kind;
 
-  if (name) {
-    llace_nameref_t name_ref;
-    err = llace_module_add_name(module, name, &name_ref);
-    if (err != LLACE_ERROR_NONE) return err;
-    type.name = name_ref;
+  switch (builder->kind) {
+    case LLACE_TYPE_VOID:
+    case LLACE_TYPE_VPTR:
+    case LLACE_TYPE_VARADIC:
+      break;
+    case LLACE_TYPE_INT:
+      type._int = builder->_int;
+      break;
+    case LLACE_TYPE_UNT:
+      type._unt = builder->_unt;
+      break;
+    case LLACE_TYPE_FLOAT:
+      type._float.mantissa = builder->_float.mantissa;
+      type._float.exponent = builder->_float.exponent;
+      break;
+    case LLACE_TYPE_PTR:
+      type._ptr.type = builder->_ptr.type;
+      type._ptr.depth = builder->_ptr.depth;
+      break;
+    case LLACE_TYPE_ARRAY:
+      type._array.element = builder->_array.element;
+      type._array.count = builder->_array.count;
+      break;
+    case LLACE_TYPE_STRUCT:
+    case LLACE_TYPE_UNION:
+      type._composite.members = builder->_composite.members;
+      break;
+    case LLACE_TYPE_FUNCTION:
+      type._func.abi = builder->_func.abi;
+      type._func.params = builder->_func.params;
+      type._func.returns = builder->_func.returns;
+      break;
+    default:
+      LLACE_LOG_ERROR("Invalid Value Kind %d", type.kind);
+      return LLACE_ERROR_BADARG;
+  };
+
+  if (builder->name) {
+    if (!builder->_module) {
+      LLACE_LOG_DEBUG("Name given but no module available? is this a mistake?");
+    } else {
+      LLACE_RUNCHECK(llace_module_add_name(builder->_module, builder->name, (builder->namelen == 0 ? strlen(builder->name) : builder->namelen), &type.name));
+    }
   }
 
-  llace_typeref_t local_typeref;
-  err = llace_module_add_type(module, &type, &local_typeref);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (typeref) {
-    *typeref = local_typeref;
-  }
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_add_int(llace_module_t *module, llace_typeref_t *typeref, const char *name, unsigned bitwidth) {
-  if (!module) return LLACE_ERROR_BADARG;
-  llace_error_t err;
-  llace_type_t type;
-
-  err = llace_type_init(&type);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  err = llace_type_int(&type, bitwidth);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (name) {
-    llace_nameref_t name_ref;
-    err = llace_module_add_name(module, name, &name_ref);
-    if (err != LLACE_ERROR_NONE) return err;
-    type.name = name_ref;
+  if (dest) {
+    *dest = type;
   }
 
-  llace_typeref_t local_typeref;
-  err = llace_module_add_type(module, &type, &local_typeref);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (typeref) {
-    *typeref = local_typeref;
-  }
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_add_uint(llace_module_t *module, llace_typeref_t *typeref, const char *name, unsigned bitwidth) {
-  if (!module) return LLACE_ERROR_BADARG;
-  llace_error_t err;
-  llace_type_t type;
-
-  err = llace_type_init(&type);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  err = llace_type_uint(&type, bitwidth);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (name) {
-    llace_nameref_t name_ref;
-    err = llace_module_add_name(module, name, &name_ref);
-    if (err != LLACE_ERROR_NONE) return err;
-    type.name = name_ref;
+  if (builder->_module) {
+    LLACE_RUNCHECK(llace_module_add_type(builder->_module, &type))
   }
 
-  llace_typeref_t local_typeref;
-  err = llace_module_add_type(module, &type, &local_typeref);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (typeref) {
-    *typeref = local_typeref;
-  }
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_add_float(llace_module_t *module, llace_typeref_t *typeref, const char *name, unsigned mantissa, unsigned exponent) {
-  if (!module) return LLACE_ERROR_BADARG;
-  llace_error_t err;
-  llace_type_t type;
-
-  err = llace_type_init(&type);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  err = llace_type_float(&type, mantissa, exponent);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (name) {
-    llace_nameref_t name_ref;
-    err = llace_module_add_name(module, name, &name_ref);
-    if (err != LLACE_ERROR_NONE) return err;
-    type.name = name_ref;
-  }
-
-  llace_typeref_t local_typeref;
-  err = llace_module_add_type(module, &type, &local_typeref);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (typeref) {
-    *typeref = local_typeref;
-  }
-  
-  return LLACE_ERROR_NONE;
-}
-llace_error_t llace_type_add_ptr(llace_module_t *module, llace_typeref_t *typeref, const char *name, llace_typeref_t pointee_type, size_t depth) {
-  if (!module) return LLACE_ERROR_BADARG;
-  llace_error_t err;
-  llace_type_t type;
-
-  err = llace_type_init(&type);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  err = llace_type_ptr(&type, pointee_type, depth);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (name) {
-    llace_nameref_t name_ref;
-    err = llace_module_add_name(module, name, &name_ref);
-    if (err != LLACE_ERROR_NONE) return err;
-    type.name = name_ref;
-  }
-
-  llace_typeref_t local_typeref;
-  err = llace_module_add_type(module, &type, &local_typeref);
-  if (err != LLACE_ERROR_NONE) return err;
-
-  if (typeref) {
-    *typeref = local_typeref;
-  }
-  
   return LLACE_ERROR_NONE;
 }

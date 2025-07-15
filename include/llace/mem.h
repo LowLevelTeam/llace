@@ -10,263 +10,102 @@
 extern "C" {
 #endif
 
-// ================ Memory Handle System ================ //
+// This system is mainly to keep memory operations easily updateable
 
-/**
- * Handle-based memory allocation system for LLACE IR compiler.
- * 
- * This system uses handles instead of raw pointers to allow for memory
- * compaction and relocation without breaking references. All allocations
- * are tracked and can be moved during defragmentation.
- */
+// ================ Item Allocation ================ //
 
-typedef uint32_t llace_handle_t;
-#define LLACE_HANDLE_INVALID 0
+typedef struct llace_item {
+  void *data;
+} llace_item_t;
 
-// ================ Memory Manager ================ //
+// Create a new memory item with specified size
+#define llace_mem_new(size) (llace_item_t){ .data = malloc(size) }
 
-/**
- * Initialize the global memory manager with an initial pool size.
- * Must be called before any other memory operations.
- * 
- * @param initial_size Initial size of the memory pool in bytes
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_init(size_t initial_size);
+// Free memory item data
+#define llace_mem_free(item) if ((item).data) { free((item).data); (item).data = NULL; }
 
-/**
- * Cleanup and free all memory managed by the system.
- * Invalidates all existing handles.
- */
-void llace_mem_cleanup(void);
+// Get pointer to item data
+#define llace_mem_get(item) ((item).data)
 
-/**
- * Compact memory by moving allocations to eliminate fragmentation.
- * This operation may change the physical addresses of allocations but
- * handles remain valid.
- * 
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_compact(void);
+// ================ Array Allocation ================ //
 
-/**
- * Expand the memory pool if needed to accommodate more allocations.
- * 
- * @param additional_size Additional bytes to add to the pool
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_expand(size_t additional_size);
+typedef struct llace_array {
+  void *data;
+  size_t element_size;
+  size_t element_count;
+  size_t element_capacity;
+} llace_array_t;
 
-// ================ Allocation Functions ================ //
+llace_array_t llace_mem_newarray(size_t element_size, size_t element_capacity);
+void llace_mem_freearray(llace_array_t *arr);
+void llace_mem_reserve(llace_array_t *arr, size_t element_capacity);
+void llace_mem_array_push(llace_array_t *arr, const void *data);
+void llace_mem_array_pusha(llace_array_t *arr, const void *data, size_t count);
+void *llace_mem_array_get(llace_array_t *arr, size_t index); // item at array index
+void *llace_mem_array_back(llace_array_t *arr); // end of array
+void *llace_mem_array_front(llace_array_t *arr); // beginning of array
 
-/**
- * Allocate a block of memory.
- * 
- * @param size Size in bytes to allocate
- * @param handle Output parameter for the allocated handle
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_alloc(size_t size, llace_handle_t *handle);
+// ================ Interface Macros ================ //
 
-/**
- * Allocate an array of elements.
- * This is optimized for array allocations common in IR operations.
- * 
- * @param element_size Size of each array element
- * @param count Number of elements
- * @param handle Output parameter for the allocated handle
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_alloc_array(size_t element_size, size_t count, llace_handle_t *handle);
+// Allocate memory for a specific type
+#define LLACE_NEW(type) llace_mem_new(sizeof(type))
 
-/**
- * Reallocate a memory block to a new size.
- * May move the allocation to a new location.
- * 
- * @param handle Handle to the existing allocation
- * @param new_size New size in bytes
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_realloc(llace_handle_t handle, size_t new_size);
+// Free memory item
+#define LLACE_FREE(item) llace_mem_free(item)
 
-/**
- * Reallocate an array to a new element count.
- * 
- * @param handle Handle to the existing array allocation
- * @param new_count New number of elements
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_realloc_array(llace_handle_t handle, size_t new_count);
+// Get typed pointer to item data
+#define LLACE_GET(type, item) ((type *)((item).data))
 
-/**
- * Free a memory allocation.
- * 
- * @param handle Handle to the allocation to free
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_free(llace_handle_t handle);
+// ================ Array Helper Macros ================ //
 
-// ================ Access Functions ================ //
+// Get raw data pointer from array
+#define LLACE_ARRAY_RAW(array) ((array).data)
 
-/**
- * Get a pointer to the memory referenced by a handle.
- * 
- * WARNING: This pointer is only valid until the next call to llace_mem_compact()
- * or any operation that may trigger compaction. For long-term storage,
- * always use handles.
- * 
- * @param handle Handle to the allocation
- * @return Pointer to the memory, or NULL if handle is invalid
- */
-void *llace_mem_get(llace_handle_t handle);
+// Get current number of elements in array
+#define LLACE_ARRAY_COUNT(array) ((array).element_count)
 
-/**
- * Get the size of an allocation.
- * 
- * @param handle Handle to the allocation
- * @return Size in bytes, or 0 if handle is invalid
- */
-size_t llace_mem_size(llace_handle_t handle);
+// Get maximum capacity of array
+#define LLACE_ARRAY_CAPACITY(array) ((array).element_capacity)
 
-/**
- * Get the element count for an array allocation.
- * 
- * @param handle Handle to the array allocation
- * @return Number of elements, or 0 if handle is invalid or not an array
- */
-size_t llace_mem_array_count(llace_handle_t handle);
+// Get size of individual elements in array
+#define LLACE_ARRAY_ELEMENT_SIZE(array) ((array).element_size)
 
-/**
- * Get the element size for an array allocation.
- * 
- * @param handle Handle to the array allocation
- * @return Size of each element, or 0 if handle is invalid or not an array
- */
-size_t llace_mem_array_element_size(llace_handle_t handle);
+// Create new array for specific type with given capacity
+#define LLACE_NEW_ARRAY(type, capacity) llace_mem_newarray(sizeof(type), capacity)
 
-/**
- * Check if a handle is valid.
- * 
- * @param handle Handle to check
- * @return true if handle is valid, false otherwise
- */
-bool llace_mem_is_valid(llace_handle_t handle);
+// Free array and its data
+#define LLACE_FREE_ARRAY(array) llace_mem_freearray(&(array))
 
-/**
- * Check if a handle refers to an array allocation.
- * 
- * @param handle Handle to check
- * @return true if handle refers to an array, false otherwise
- */
-bool llace_mem_is_array(llace_handle_t handle);
+// Push value to array (by value)
+#define LLACE_ARRAY_PUSH(array, value) do { typeof((value)) val = (value); llace_mem_array_push(&(array), &val); } while (0);
 
-// ================ Memory Statistics ================ //
+// Push value to array (by pointer)
+#define LLACE_ARRAY_PUSHP(array, value_ptr) llace_mem_array_push(&(array), (value_ptr))
 
-typedef struct {
-  size_t total_size;              // Total size of memory pool
-  size_t used_size;               // Currently allocated bytes
-  size_t free_size;               // Available bytes
-  size_t fragmentation_percent;   // Fragmentation as percentage (0-100)
-  size_t allocation_count;        // Number of active allocations
-  size_t array_count;             // Number of active array allocations
-  size_t compaction_count;        // Number of compactions performed
-  size_t expansion_count;         // Number of pool expansions
-} llace_mem_stats_t;
+// Push multiple values to array
+#define LLACE_ARRAY_PUSHA(array, value_ptr, count) llace_mem_array_pusha(&(array), (value_ptr), (count))
 
-/**
- * Get memory usage statistics.
- * 
- * @param stats Output parameter for statistics
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_get_stats(llace_mem_stats_t *stats);
+// Get typed pointer to element at index
+#define LLACE_ARRAY_GET(type, array, index) ((type *)llace_mem_array_get(&(array), (index)))
 
-/**
- * Print memory statistics to stdout (debug function).
- */
-void llace_mem_print_stats(void);
+// Get typed pointer to first element
+#define LLACE_ARRAY_FRONT(type, array) ((type *)llace_mem_array_front(&(array)))
 
-// ================ Configuration ================ //
+// Get typed pointer to last element
+#define LLACE_ARRAY_BACK(type, array) ((type *)llace_mem_array_back(&(array)))
 
-typedef struct {
-  size_t min_allocation_size;     // Minimum allocation size (for alignment)
-  size_t compaction_threshold;    // Fragmentation % that triggers auto-compaction
-  bool auto_expand;               // Automatically expand pool when needed
-  bool auto_compact;              // Automatically compact when threshold reached
-} llace_mem_config_t;
+// Iterate over array elements
+#define LLACE_ARRAY_FOREACH(type, var_name, array) \
+  for (size_t _llace_i = 0; _llace_i < LLACE_ARRAY_COUNT(array); ++_llace_i) \
+    for (type *var_name = LLACE_ARRAY_GET(type, array, _llace_i); \
+         var_name != NULL; \
+         var_name = NULL)
 
-/**
- * Configure memory manager behavior.
- * 
- * @param config Configuration parameters
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_configure(const llace_mem_config_t *config);
+// Check if array is empty
+#define LLACE_ARRAY_IS_EMPTY(array) (LLACE_ARRAY_COUNT(array) == 0)
 
-/**
- * Get current memory manager configuration.
- * 
- * @param config Output parameter for current configuration
- * @return LLACE_ERROR_NONE on success, error code on failure
- */
-llace_error_t llace_mem_get_config(llace_mem_config_t *config);
-
-// ================ Convenience Macros ================ //
-
-/**
- * Type-safe array allocation macro.
- * 
- * @param type Element type
- * @param count Number of elements
- * @param handle_ptr Pointer to handle variable
- */
-#define LLACE_MEM_ALLOC_ARRAY(type, count, handle_ptr) \
-  llace_mem_alloc_array(sizeof(type), (count), (handle_ptr))
-
-/**
- * Type-safe array reallocation macro.
- * 
- * @param handle Handle to existing array
- * @param type Element type
- * @param new_count New number of elements
- */
-#define LLACE_MEM_REALLOC_ARRAY(handle, type, new_count) \
-  llace_mem_realloc((handle), sizeof(type) * (new_count))
-
-/**
- * Type-safe pointer retrieval macro.
- * 
- * @param type Element type
- * @param handle Handle to allocation
- */
-#define LLACE_MEM_GET_TYPED(type, handle) \
-  ((type *)llace_mem_get(handle))
-
-#ifdef NDEBUG
-
-/**
- * Get array element at index (bounds checking in debug builds).
- * 
- * @param type Element type
- * @param handle Handle to array allocation
- * @param index Array index
- */
-#define LLACE_MEM_ARRAY_GET(type, handle, index) \
-  (((type *)llace_mem_get(handle)) + (index))
-#else
-#define LLACE_MEM_ARRAY_GET(type, handle, index) \
-  llace_mem_array_get_checked(handle, sizeof(type), index)
-
-/**
- * Bounds-checked array element access (debug only).
- * 
- * @param handle Handle to array allocation
- * @param element_size Size of each element
- * @param index Array index
- * @return Pointer to element, or NULL if out of bounds
- */
-void *llace_mem_array_get_checked(llace_handle_t handle, size_t element_size, size_t index);
-#endif
+// Check if array is full
+#define LLACE_ARRAY_IS_FULL(array) (LLACE_ARRAY_COUNT(array) >= LLACE_ARRAY_CAPACITY(array))
 
 #ifdef __cplusplus
 }

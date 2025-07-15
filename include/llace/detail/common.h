@@ -18,14 +18,6 @@ extern "C" {
   abort(); \
 } while(0);
 
-// Error reporting
-#define LLACE_ERROR(msg) do { \
-  fprintf(stderr, "ERROR: '%s' at %s:%d\n", msg, __FILE__, __LINE__); \
-} while(0);
-#define LLACE_ERRORV(fmt, ...) do { \
-  fprintf(stderr, "ERROR: '"fmt"' at %s:%d\n", __VA_ARGS__, __FILE__, __LINE__); \
-} while(0);
-
 #ifdef __cplusplus
 }
 #endif

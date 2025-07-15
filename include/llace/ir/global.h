@@ -29,20 +29,7 @@ typedef struct llace_global {
   };
 } llace_global_t;
 
-/** 
-* @param global uninitalized llace_global_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
 llace_error_t llace_global_init(llace_global_t *global);
-
-/** 
-* @param global empty llace_global_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
 llace_error_t llace_global_destroy(llace_global_t *global);
 
 // ================================================ Builder ================================================ /

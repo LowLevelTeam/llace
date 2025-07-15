@@ -6888,7 +6888,7 @@ i32 main(int argc, const char *argv[]) {
     AddIncludePaths(libllace_dev, "./include");
     AddFile(libllace_dev, "./src/*.c");
     AddFile(libllace_dev, "./src/ir/*.c");
-    AddFile(libllace_dev, "./src/builder/*.c");
+    // AddFile(libllace_dev, "./src/builder/*.c");
     // AddFile(libllace_dev, "./src/codegen/*.c");
     AddLibraryPaths(libllace_dev, "./build");
     InstallStaticLib(libllace_dev);
@@ -6906,20 +6906,6 @@ i32 main(int argc, const char *argv[]) {
     AddLibraryPaths(llace_test, "./build");
     LinkSystemLibraries(llace_test, "llace-dev");
     InstallExecutable(llace_test);
-
-    Executable llace_example = CreateExecutable((ExecutableOptions){
-      .output = "example",
-      .std = args.stdlevel,
-      .debug = args.debuglevel,
-      .warnings = args.warninglevel,
-      .error = args.errorfmt,
-      .optimization = args.optlevel
-    });
-    AddIncludePaths(llace_example, "./include");
-    AddFile(llace_example, "./example/*.c");
-    AddLibraryPaths(llace_example, "./build");
-    LinkSystemLibraries(llace_example, "llace-dev");
-    InstallExecutable(llace_example);
   }
   EndBuild();
   

@@ -10,6 +10,8 @@ extern "C" {
 // ================================================ IR ================================================ //
 
 typedef enum llace_copcode {
+  LLACE_COP_NULL,
+
   // Arithmetic
   LLACE_COP_ADD,
   LLACE_COP_SUB,
@@ -39,10 +41,10 @@ typedef enum llace_copcode {
 
 typedef struct llace_cinstr {
   llace_copcode_t opcode;
-  llace_handle_t params; // llace_value_t[] Operands for the instruction (zeroth index contains return value)
+  llace_array_t params; // llace_value_t[] Operands for the instruction (zeroth index contains return value)
 } llace_cinstr_t;
 
-void llace_cinstr_create(llace_cinstr_t *instr);
+llace_error_t llace_cinstr_create(llace_cinstr_t *instr);
 void llace_cinstr_destroy(llace_cinstr_t *instr);
 
 // ================================================ Builder ================================================ //

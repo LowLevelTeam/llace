@@ -2,6 +2,7 @@
 #define LLACE_IR_FUNC_H
 
 #include <llace/ir/common.h>
+#include <llace/ir/block.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,15 +23,10 @@ typedef struct llace_function_attributes {
   unsigned _weak : 1; // The function can be overridden by another definition
 } llace_function_attributes_t;
 
-typedef struct llace_block {
-  llace_handle_t locals; // llace_variable_t[]
-  llace_handle_t instrs; // llace_instr_t[]
-} llace_block_t;
-
 typedef struct llace_function {
   llace_nameref_t name; // symbol name
-  llace_handle_t rets; // llace_variable_t[]
-  llace_handle_t params; // llace_variable_t[]
+  llace_array_t rets; // llace_variable_t[]
+  llace_array_t params; // llace_variable_t[]
   llace_abi_t abi; // calling convention
   llace_block_t block; // instructions
 
@@ -40,20 +36,7 @@ typedef struct llace_function {
   };
 } llace_function_t;
 
-/** 
-* @param func uninitalized llace_function_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
 llace_error_t llace_function_init(llace_function_t *func);
-
-/** 
-* @param func empty llace_function_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
 llace_error_t llace_function_destroy(llace_function_t *func);
 
 // ================================================ Builder ================================================ /

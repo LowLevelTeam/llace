@@ -28,20 +28,8 @@ typedef struct llace_variable {
   };
 } llace_variable_t;
 
-/** 
-* @param variable uninitalized llace_variable_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
-llace_error_t llace_variable_init(llace_variable_t *variable);
 
-/** 
-* @param variable empty llace_variable_t structure, if NULL fail with BADARG
-*
-* @return LLACE_ERROR_NONE
-* @return LLACE_ERROR_BADARG
-*/
+llace_error_t llace_variable_init(llace_variable_t *variable);
 llace_error_t llace_variable_destroy(llace_variable_t *variable);
 
 // ================================================ Builder ================================================ /
