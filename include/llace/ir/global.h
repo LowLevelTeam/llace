@@ -2,6 +2,7 @@
 #define LLACE_IR_GLOBAL_H
 
 #include <llace/llace.h>
+#include <llace/ir/value.h>
 
 #ifdef __cplusplus
 extern "C" {

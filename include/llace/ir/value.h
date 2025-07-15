@@ -2,6 +2,7 @@
 #define LLACE_IR_VALUE_H
 
 #include <llace/llace.h>
+#include <llace/ir/cinstr.h>
 
 #ifdef __cplusplus
 extern "C" {

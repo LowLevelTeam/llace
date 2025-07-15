@@ -3,12 +3,12 @@
 
 // Standard header file for In Memory Intermediate Representation
 
-#include <ir/abi.h>
-#include <ir/func.h>
-#include <ir/global.h>
-#include <ir/instr.h>
-#include <ir/module.h>
-#include <ir/type.h>
-#include <ir/value.h>
+#include <llace/ir/func.h>
+#include <llace/ir/global.h>
+#include <llace/ir/instr.h>
+#include <llace/ir/module.h>
+#include <llace/ir/type.h>
+#include <llace/ir/value.h>
+#include <llace/ir/var.h>
 
 #endif // LLACE_IR_H

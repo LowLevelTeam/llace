@@ -28,6 +28,7 @@ extern "C" {
 typedef enum {
   LLACE_ERROR_NONE = 0,
   LLACE_ERROR_NOMEM, // Out of Memory
+  LLACE_ERROR_BADARG, // Bad Argument
   LLACE_ERROR_INVLMOD, // Invalid Module
   LLACE_ERROR_INVLFUNC, // Invalid Function
   LLACE_ERROR_INVLTYPE, // Invalid Type
@@ -78,7 +79,6 @@ typedef struct {
   size_t memory_used;
   size_t active_allocations;
   size_t compactions_performed;
-  const char *version;
   const char *build_date;
   const char *build_config;
 } llace_info_t;

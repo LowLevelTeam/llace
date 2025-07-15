@@ -1,7 +1,7 @@
 #ifndef LLACE_IR_FUNC_H
 #define LLACE_IR_FUNC_H
 
-#include <llace/llace.h>
+#include <llace/ir/common.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,8 +28,8 @@ typedef struct llace_function_attributes {
 typedef struct llace_function {
   llace_nameref_t name; // symbol name
   llace_abi_t abi; // calling convention
-  llace_handler_t rets; // llace_variable_t[]
-  llace_handler_t params; // llace_variable_t[]
+  llace_handle_t rets; // llace_variable_t[]
+  llace_handle_t params; // llace_variable_t[]
   llace_handle_t locals; // llace_variable_t[]
   llace_handle_t instrs; // llace_instr_t[]
 

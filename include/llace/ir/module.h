@@ -1,8 +1,10 @@
 #ifndef LLACE_IR_MODULE_H
 #define LLACE_IR_MODULE_H
 
-#include <llace/llace.h>
-#include <llace/mem.h> // llace_handle_t
+#include <llace/ir/common.h>
+#include <llace/ir/type.h>
+#include <llace/ir/global.h>
+#include <llace/ir/func.h>
 
 #ifdef __cplusplus
 extern "C" {

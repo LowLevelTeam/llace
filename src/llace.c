@@ -3,55 +3,29 @@
 #include <string.h>
 #include <stdio.h>
 
-// ================ Version Information ================ //
-
-const char *llace_version_str(void) {
-  static char version_buffer[64];
-  snprintf(version_buffer, sizeof(version_buffer), "%d.%d.%d", 
-           LLACE_VERSION_MAJOR, LLACE_VERSION_MINOR, LLACE_VERSION_PATCH);
-  return version_buffer;
-}
-
-// ================ Target Support ================ //
-
-bool llace_target_is_supported(llace_target_t target) {
-  switch (target) {
-    case LLACE_TARGET_AMD64_GNU_ELF64:
-      return true;
-    default:
-      return false;
-  }
-}
-
-const char *llace_target_str(llace_target_t target) {
-  switch (target) {
-    case LLACE_TARGET_AMD64_GNU_ELF64:
-      return "x86_64-gnu-elf64";
-    default:
-      return "unknown";
-  }
-}
-
 // ================ Error Handling ================ //
 
 const char *llace_error_str(llace_error_t error) {
   switch (error) {
-    case LLACE_ERROR_NONE:
-      return "No error";
-    case LLACE_ERROR_NOMEM:
-      return "Out of memory";
-    case LLACE_ERROR_INVLMOD:
-      return "Invalid module or operation";
-    case LLACE_ERROR_INVLFUNC:
-      return "Invalid function";
-    case LLACE_ERROR_INVLTYPE:
-      return "Invalid type";
-    case LLACE_ERROR_IO:
-      return "I/O error";
-    case LLACE_ERROR_BADTARGET:
-      return "Unsupported target";
-    default:
-      return "Unknown error";
+    case LLACE_ERROR_NONE: return "No Error";
+    case LLACE_ERROR_NOMEM: return "Out of Memory";
+    case LLACE_ERROR_BADARG: return "Bad Argument";
+    case LLACE_ERROR_INVLMOD: return "Invalid Module";
+    case LLACE_ERROR_INVLFUNC: return "Invalid Function";
+    case LLACE_ERROR_INVLTYPE: return "Invalid Type";
+    case LLACE_ERROR_IO: return "IO Failed";
+    case LLACE_ERROR_INVLFMT: return "Invalid Format";
+    case LLACE_ERROR_INVLARCH: return "Invalid Architecture";
+    case LLACE_ERROR_INVLSECT: return "Invalid Section";
+    case LLACE_ERROR_INVLSYM: return "Invalid Symbol";
+    case LLACE_ERROR_INVLREL: return "Invalid Relocation";
+    case LLACE_ERROR_SECT404: return "Section Not Found";
+    case LLACE_ERROR_SYM404: return "Sybol Not Found";
+    case LLACE_ERROR_SYMDUP: return "Symbol Duplicate";
+    case LLACE_ERROR_UNRESSYM: return "Unmresolved Symbol";
+    case LLACE_ERROR_BADALLIGN: return "Bad Allignment";
+    case LLACE_ERROR_OVERFLOW: return "Overflow";
+    default: return "Unknown Error";
   }
 }
 
@@ -149,7 +123,6 @@ llace_error_t llace_get_info(llace_info_t *info) {
   info->memory_used = mem_stats.used_size;
   info->active_allocations = mem_stats.allocation_count;
   info->compactions_performed = mem_stats.compaction_count;
-  info->version = llace_version_str();
   info->build_date = g_llace_state.build_date;
   info->build_config = g_llace_state.build_config;
   
@@ -162,7 +135,6 @@ void llace_print_info(void) {
   
   if (!g_llace_state.initialized) {
     printf("Status: Not initialized\n");
-    printf("Version: %s\n", llace_version_str());
     printf("Build: %s (%s)\n", g_llace_state.build_config, g_llace_state.build_date);
     return;
   }
@@ -170,7 +142,6 @@ void llace_print_info(void) {
   llace_info_t info;
   if (llace_get_info(&info) == LLACE_ERROR_NONE) {
     printf("Status: Initialized\n");
-    printf("Version: %s\n", info.version);
     printf("Build: %s (%s)\n", info.build_config, info.build_date);
     printf("Memory Pool: %zu bytes\n", info.memory_pool_size);
     printf("Memory Used: %zu bytes (%.1f%%)\n", 
@@ -182,9 +153,4 @@ void llace_print_info(void) {
   } else {
     printf("Status: Error retrieving information\n");
   }
-  
-  printf("\nSupported Targets:\n");
-  printf("  - %s: %s\n", 
-         llace_target_str(LLACE_TARGET_AMD64_GNU_ELF64),
-         llace_target_is_supported(LLACE_TARGET_AMD64_GNU_ELF64) ? "supported" : "not supported");
 }
