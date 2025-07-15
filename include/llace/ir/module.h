@@ -15,8 +15,8 @@ typedef struct llace_module {
   llace_config_t *conf;
   llace_nameref_t name; // Module name (typically filename)
   llace_handle_t nametab; // const char *
-  llace_handle_t nametab; // llace_type_t
-  llace_handle_t nametab; // llace_global_t
+  llace_handle_t types; // llace_type_t
+  llace_handle_t globs; // llace_global_t
   llace_handle_t funcs; // llace_function_t
 } llace_module_t;
 

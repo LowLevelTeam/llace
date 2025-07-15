@@ -27,7 +27,8 @@ typedef enum llace_opcode {
   // Memory
   LLACE_OP_LOAD,
   LLACE_OP_STORE,
-  LLACE_OP_ALLOC, // at the start of each block. contains all local variable definitions
+  LLACE_OP_ALLOC, // marks a variable is used beyond this point
+  LLACE_OP_DEALLOC, // marks a variable is not used beyond this point
 
   // Control flow
   LLACE_OP_JMP, // unconditional jump with no return
@@ -36,13 +37,14 @@ typedef enum llace_opcode {
   LLACE_OP_RET, // unconditional jump to return
 } llace_opcode_t;
 
-typedef struct llace_instruction {
+typedef struct llace_instr {
   llace_opcode_t opcode;
   llace_handle_t params; // llace_value_t[] Operands for the instruction
 } llace_instr_t;
 
 void llace_instr_create(llace_instr_t *instr);
 void llace_instr_destroy(llace_instr_t *instr);
+const char *llace_instr_opstr(llace_opcode_t op);
 
 // ================================================ Builder ================================================ //
 
