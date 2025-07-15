@@ -1,73 +1,29 @@
 #include <llace/ir.h>
-#include <string.h>
+#include <llace/detail/common.h>
 
+// ================ IR Main Implementation ================ //
 
-// ================ Module Implementation ================ //
+// This file serves as the main entry point for the IR system
+// All individual components are implemented in their respective files:
+// - ir/type.c - Type system
+// - ir/value.c - Value system
+// - ir/var.c - Variable system
+// - ir/global.c - Global variable system
+// - ir/func.c - Function system
+// - ir/instr.c - Instruction system
+// - ir/cinstr.c - Child instruction system
+// - ir/module.c - Module system
 
-llace_error_t llace_module_init(llace_module_t *module, const char *name, size_t namelen) {
-  if (!module) return LLACE_ERROR_BADARG;
-  memset(module, 0, sizeof(llace_module_t));
+// The IR system provides a complete intermediate representation
+// for building and manipulating code structures in memory.
 
-  // TODO: Allocate space for and copy name into buffer
+// Example usage:
+// 1. Initialize a module with llace_module_init()
+// 2. Add types with llace_module_add_type()
+// 3. Add globals with llace_module_add_global()
+// 4. Add functions with llace_module_add_function()
+// 5. Build instruction sequences within functions
+// 6. Pass the complete module to code generation
 
-  return LLACE_ERROR_NONE; // Success
-}
-
-llace_error_t llace_module_destroy(llace_module_t *module) {
-  if (!module) return LLACE_ERROR_BADARG;
-  
-  // Free types
-  if (module->types) {
-    // TODO...
-  }
-  
-  // Free globals
-  if (module->globs) {
-    // TODO...
-  }
-  
-  // Free functions
-  if (module->funcs) {
-    // TODO...
-  }
-  
-  memset(module, 0, sizeof(llace_module_t));
-  return LLACE_ERROR_NONE;
-}
-
-llace_error_t llace_module_add_name(llace_module_t *module, const char *name, llace_nameref_t *ref) {
-  // TODO...
-  return LLACE_ERROR_NONE; // Success
-}
-
-llace_error_t llace_module_add_type(llace_module_t *module, const llace_type_t *type, llace_typeref_t *ref) {
-  // TODO...
-  return LLACE_ERROR_NONE; // Success
-}
-
-llace_error_t llace_module_add_global(llace_module_t *module, const llace_global_t *global, llace_globalref_t *ref) {
-  // TODO...
-  return LLACE_ERROR_NONE; // Success
-}
-
-llace_error_t llace_module_add_function(llace_module_t *module, const llace_function_t *function, llace_funcref_t *ref) {
-  // TODO...
-  return LLACE_ERROR_NONE; // Success
-}
-
-char *llace_module_get_name(llace_module_t *module, llace_nameref_t ref) {
-  // TODO...
-  return NULL;
-}
-llace_type_t *llace_module_get_type(llace_module_t *module, llace_typeref_t ref) {
-  // TODO...
-  return NULL;
-}
-llace_global_t *llace_module_get_global(llace_module_t *module, llace_globalref_t ref) {
-  // TODO...
-  return NULL;
-}
-llace_function_t *llace_module_get_function(llace_module_t *module, llace_funcref_t ref) {
-  // TODO...
-  return NULL;
-}
+// All memory management is handled through the llace_mem_* system
+// to ensure efficient allocation and deallocation.

@@ -1,7 +1,7 @@
 #ifndef LLACE_IR_INSTR_H
 #define LLACE_IR_INSTR_H
 
-#include <llace/llace.h>
+#include <llace/ir/common.h>
 
 #ifdef __cplusplus
 extern "C" {

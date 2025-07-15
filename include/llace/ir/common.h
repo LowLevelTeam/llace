@@ -20,6 +20,9 @@ typedef size_t llace_varref_t; // index into function locals array
 struct llace_value;
 typedef struct llace_value llace_value_t;
 
+struct llace_module;
+typedef struct llace_module llace_module_t;
+
 #ifdef __cplusplus
 }
 #endif

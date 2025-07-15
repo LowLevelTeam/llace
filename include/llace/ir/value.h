@@ -3,6 +3,7 @@
 
 #include <llace/llace.h>
 #include <llace/ir/cinstr.h>
+#include <llace/ir/func.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,13 +28,13 @@ typedef struct llace_value {
     // void _void;
     struct {
       llace_typeref_t type; // Type of the constant value
-      void *data; // Pointer to the constant data (e.g., integer, float)
+      llace_handle_t data; // Pointer to the constant data (e.g., integer, float)
     } _const; // Constant  (LLACE_VALUE_CONST)
     llace_varref_t _var; // Variable Reference (LLACE_VALUE_VARIABLE)
     llace_globalref_t _glob; // Global Reference (LLACE_VALUE_GLOBAL)
     llace_funcref_t _func; // Function Reference (LLACE_VALUE_FUNCTION)
     llace_cinstr_t _instr; // Child Instruction (LLACE_VALUE_INSTRUCTION)
-    llace_handle_t _block; // llace_instr_t[] // Instruction Block (LLACE_VALUE_BLOCK)
+    llace_block_t _block; // Instruction Block (LLACE_VALUE_BLOCK)
   };
 } llace_value_t;
 

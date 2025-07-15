@@ -6887,7 +6887,8 @@ i32 main(int argc, const char *argv[]) {
     });
     AddIncludePaths(libllace_dev, "./include");
     AddFile(libllace_dev, "./src/*.c");
-    // AddFile(libllace_dev, "./src/builder/*.c");
+    AddFile(libllace_dev, "./src/ir/*.c");
+    AddFile(libllace_dev, "./src/builder/*.c");
     // AddFile(libllace_dev, "./src/codegen/*.c");
     AddLibraryPaths(libllace_dev, "./build");
     InstallStaticLib(libllace_dev);

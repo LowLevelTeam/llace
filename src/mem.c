@@ -329,7 +329,7 @@ void llace_mem_cleanup(void) {
 
 llace_error_t llace_mem_compact(void) {
   if (!g_mem_manager.initialized) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   compact_memory_internal();
@@ -338,7 +338,7 @@ llace_error_t llace_mem_compact(void) {
 
 llace_error_t llace_mem_expand(size_t additional_size) {
   if (!g_mem_manager.initialized) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   size_t new_size = g_mem_manager.pool_size + additional_size;
@@ -356,7 +356,7 @@ llace_error_t llace_mem_expand(size_t additional_size) {
 
 llace_error_t llace_mem_alloc(size_t size, llace_handle_t *handle) {
   if (!g_mem_manager.initialized || !handle || size == 0) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   *handle = LLACE_HANDLE_INVALID;
@@ -397,7 +397,7 @@ llace_error_t llace_mem_alloc(size_t size, llace_handle_t *handle) {
 
 llace_error_t llace_mem_alloc_array(size_t element_size, size_t count, llace_handle_t *handle) {
   if (!g_mem_manager.initialized || !handle || element_size == 0 || count == 0) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   size_t total_size = element_size * count;
@@ -420,12 +420,12 @@ llace_error_t llace_mem_alloc_array(size_t element_size, size_t count, llace_han
 
 llace_error_t llace_mem_realloc(llace_handle_t handle, size_t new_size) {
   if (!g_mem_manager.initialized || handle == LLACE_HANDLE_INVALID || new_size == 0) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   llace_mem_block_t *block = get_block_from_handle(handle);
   if (!block || block->is_free || block->magic != LLACE_MEM_MAGIC) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   size_t aligned_size = align_size(new_size);
@@ -476,7 +476,7 @@ llace_error_t llace_mem_realloc(llace_handle_t handle, size_t new_size) {
 llace_error_t llace_mem_realloc_array(llace_handle_t handle, size_t new_count) {
   llace_mem_block_t *block = get_block_from_handle(handle);
   if (!block || !block->is_array || block->magic != LLACE_MEM_MAGIC) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   size_t new_size = block->element_size * new_count;
@@ -485,12 +485,12 @@ llace_error_t llace_mem_realloc_array(llace_handle_t handle, size_t new_count) {
 
 llace_error_t llace_mem_free(llace_handle_t handle) {
   if (!g_mem_manager.initialized || handle == LLACE_HANDLE_INVALID) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   llace_mem_block_t *block = get_block_from_handle(handle);
   if (!block || block->is_free || block->magic != LLACE_MEM_MAGIC) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   if (block->is_array) {
@@ -557,7 +557,7 @@ bool llace_mem_is_array(llace_handle_t handle) {
 
 llace_error_t llace_mem_get_stats(llace_mem_stats_t *stats) {
   if (!g_mem_manager.initialized || !stats) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   stats->total_size = g_mem_manager.pool_size;
@@ -589,7 +589,7 @@ void llace_mem_print_stats(void) {
 
 llace_error_t llace_mem_configure(const llace_mem_config_t *config) {
   if (!g_mem_manager.initialized || !config) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   g_mem_manager.config = *config;
@@ -598,7 +598,7 @@ llace_error_t llace_mem_configure(const llace_mem_config_t *config) {
 
 llace_error_t llace_mem_get_config(llace_mem_config_t *config) {
   if (!g_mem_manager.initialized || !config) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
 
   *config = g_mem_manager.config;

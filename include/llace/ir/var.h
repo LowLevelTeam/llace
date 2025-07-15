@@ -1,7 +1,8 @@
 #ifndef LLACE_IR_VAR_H
 #define LLACE_IR_VAR_H
 
-#include <llace/llace.h>
+#include <llace/ir/common.h>
+#include <llace/ir/value.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +13,7 @@ extern "C" {
 typedef struct llace_variable_attributes {
   unsigned _const : 1; // The variable is not modified after initalization
   unsigned _volatile : 1; // The variable is not optimized
-  // unsigned _cexpr : 1; // The variable is utilized at compile time
+  unsigned _cexpr : 1; // The variable is utilized at compile time
 } llace_variable_attributes_t;
 
 typedef struct llace_variable {

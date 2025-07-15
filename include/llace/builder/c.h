@@ -6,7 +6,7 @@
 // 64 bit is specified because C uses intrinsic types of unspecified sizes
 // they are instead specified by operating systems
 
-#include <llace/llace.h>
+#include <llace/ir.h>
 
 #ifdef __cplusplus
 extern "C" {

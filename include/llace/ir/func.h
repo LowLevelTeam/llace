@@ -12,26 +12,27 @@ extern "C" {
 typedef struct llace_function_attributes {
   unsigned _extern : 1; // The function is declared but not defined
   unsigned _public : 1; // The function is visible outside this module
-  // unsigned _const : 1; // The function has no side effects and does not modify or inspect any global state
-  // unsigned _pure : 1; // The function has no side effects but can inspect global state
-  // unsigned _noreturn : 1; // The function does not return to the caller
-  // unsigned _vararg : 1; // The function can take a variable number of arguments
-  // unsigned _inline : 1; // The function can be inlined by the compiler
-  // unsigned _noinline : 1; // The function should not be inlined by the compiler
-  // unsigned _alwaysinline : 1; // The function should always be inlined by the compiler
-  // unsigned _optimize : 1; // The function should be optimized by the compiler
-  // unsigned _nooptimize : 1; // The function should not be optimized by the compiler
-  // unsigned _linkonce : 1; // The function can be merged with other definitions
-  // unsigned _weak : 1; // The function can be overridden by another definition
+  unsigned _const : 1; // The function has no side effects and does not modify or inspect any global state
+  unsigned _pure : 1; // The function has no side effects but can inspect global state
+  unsigned _noreturn : 1; // The function does not return to the caller
+  unsigned _inline : 1; // The function can be inlined by the compiler
+  unsigned _noinline : 1; // The function should not be inlined by the compiler
+  unsigned _alwaysinline : 1; // The function should always be inlined by the compiler
+  unsigned _nooptimize : 1; // The function should not be optimized by the compiler
+  unsigned _weak : 1; // The function can be overridden by another definition
 } llace_function_attributes_t;
+
+typedef struct llace_block {
+  llace_handle_t locals; // llace_variable_t[]
+  llace_handle_t instrs; // llace_instr_t[]
+} llace_block_t;
 
 typedef struct llace_function {
   llace_nameref_t name; // symbol name
-  llace_abi_t abi; // calling convention
   llace_handle_t rets; // llace_variable_t[]
   llace_handle_t params; // llace_variable_t[]
-  llace_handle_t locals; // llace_variable_t[]
-  llace_handle_t instrs; // llace_instr_t[]
+  llace_abi_t abi; // calling convention
+  llace_block_t block; // instructions
 
   union {
     llace_function_attributes_t attr; // bit field

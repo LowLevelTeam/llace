@@ -88,7 +88,7 @@ static llace_error_t push_frame(llace_iir_context_t *ctx, llace_funcref_t func_r
 
 static llace_error_t pop_frame(llace_iir_context_t *ctx) {
   if (ctx->frame_pointer == 0) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
   
   llace_iir_frame_t *frames = LLACE_MEM_GET_TYPED(llace_iir_frame_t, ctx->call_stack);
@@ -108,7 +108,7 @@ static llace_error_t pop_frame(llace_iir_context_t *ctx) {
 static llace_error_t execute_instruction(llace_iir_context_t *ctx, const llace_instr_t *instr) {
   llace_iir_frame_t *frame = llace_iir_get_current_frame(ctx);
   if (!frame) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
   
   llace_iir_rtval_t *stack = LLACE_MEM_GET_TYPED(llace_iir_rtval_t, frame->stack);
@@ -117,7 +117,7 @@ static llace_error_t execute_instruction(llace_iir_context_t *ctx, const llace_i
   
   switch (instr->opcode) {
     case LLACE_OP_ADD: {
-      if (param_count < 2) return LLACE_ERROR_INVLMOD;
+      if (param_count < 2) return LLACE_ERROR_BADARG;
       
       // Get operands (simplified - should handle different value types)
       llace_iir_rtval_t a = stack[frame->stack_pointer - 2];
@@ -138,7 +138,7 @@ static llace_error_t execute_instruction(llace_iir_context_t *ctx, const llace_i
     }
     
     case LLACE_OP_SUB: {
-      if (param_count < 2) return LLACE_ERROR_INVLMOD;
+      if (param_count < 2) return LLACE_ERROR_BADARG;
       
       llace_iir_rtval_t a = stack[frame->stack_pointer - 2];
       llace_iir_rtval_t b = stack[frame->stack_pointer - 1];
@@ -157,7 +157,7 @@ static llace_error_t execute_instruction(llace_iir_context_t *ctx, const llace_i
     }
     
     case LLACE_OP_MUL: {
-      if (param_count < 2) return LLACE_ERROR_INVLMOD;
+      if (param_count < 2) return LLACE_ERROR_BADARG;
       
       llace_iir_rtval_t a = stack[frame->stack_pointer - 2];
       llace_iir_rtval_t b = stack[frame->stack_pointer - 1];
@@ -176,7 +176,7 @@ static llace_error_t execute_instruction(llace_iir_context_t *ctx, const llace_i
     }
     
     case LLACE_OP_DIV: {
-      if (param_count < 2) return LLACE_ERROR_INVLMOD;
+      if (param_count < 2) return LLACE_ERROR_BADARG;
       
       llace_iir_rtval_t a = stack[frame->stack_pointer - 2];
       llace_iir_rtval_t b = stack[frame->stack_pointer - 1];
@@ -184,13 +184,13 @@ static llace_error_t execute_instruction(llace_iir_context_t *ctx, const llace_i
       if (a.kind == LLACE_IIR_RTVAL_INT && b.kind == LLACE_IIR_RTVAL_INT) {
         if (b._int == 0) {
           strcpy(ctx->error_message, "Division by zero");
-          return LLACE_ERROR_INVLMOD;
+          return LLACE_ERROR_BADARG;
         }
         llace_iir_rtval_int(&stack[frame->stack_pointer - 2], a.type, a._int / b._int);
       } else if (a.kind == LLACE_IIR_RTVAL_FLOAT && b.kind == LLACE_IIR_RTVAL_FLOAT) {
         if (b._float == 0.0) {
           strcpy(ctx->error_message, "Division by zero");
-          return LLACE_ERROR_INVLMOD;
+          return LLACE_ERROR_BADARG;
         }
         llace_iir_rtval_float(&stack[frame->stack_pointer - 2], a.type, a._float / b._float);
       } else {
@@ -243,7 +243,7 @@ static llace_error_t execute_instruction(llace_iir_context_t *ctx, const llace_i
     default:
       snprintf(ctx->error_message, sizeof(ctx->error_message), 
                "Unknown instruction opcode: %d", instr->opcode);
-      return LLACE_ERROR_INVLMOD;
+      return LLACE_ERROR_BADARG;
   }
   
   ctx->instruction_count++;
@@ -330,7 +330,7 @@ llace_error_t llace_iir_execute_function(llace_iir_context_t *ctx, llace_funcref
                                         const llace_iir_rtval_t *args, size_t arg_count,
                                         llace_iir_rtval_t *result) {
   if (!ctx || ctx->state != LLACE_IIR_STATE_READY) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
   
   // Ensure globals are initialized
@@ -360,7 +360,7 @@ llace_error_t llace_iir_execute_function(llace_iir_context_t *ctx, llace_funcref
 
 llace_error_t llace_iir_run(llace_iir_context_t *ctx) {
   if (!ctx || ctx->state != LLACE_IIR_STATE_RUNNING) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
   
   while (ctx->state == LLACE_IIR_STATE_RUNNING && ctx->frame_pointer > 0) {
@@ -418,7 +418,7 @@ llace_error_t llace_iir_run(llace_iir_context_t *ctx) {
 
 llace_error_t llace_iir_step(llace_iir_context_t *ctx, llace_iir_step_mode_t mode) {
   if (!ctx || (ctx->state != LLACE_IIR_STATE_RUNNING && ctx->state != LLACE_IIR_STATE_SUSPENDED)) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
   
   ctx->state = LLACE_IIR_STATE_RUNNING;
@@ -427,7 +427,7 @@ llace_error_t llace_iir_step(llace_iir_context_t *ctx, llace_iir_step_mode_t mod
     case LLACE_IIR_STEP_INSTRUCTION: {
       // Execute one instruction
       llace_iir_frame_t *frame = llace_iir_get_current_frame(ctx);
-      if (!frame) return LLACE_ERROR_INVLMOD;
+      if (!frame) return LLACE_ERROR_BADARG;
       
       llace_function_t *func = llace_module_get_function(ctx->module, frame->function);
       if (!func) return LLACE_ERROR_INVLFUNC;
@@ -459,7 +459,7 @@ llace_error_t llace_iir_step(llace_iir_context_t *ctx, llace_iir_step_mode_t mod
 
 llace_error_t llace_iir_suspend(llace_iir_context_t *ctx) {
   if (!ctx || ctx->state != LLACE_IIR_STATE_RUNNING) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
   
   ctx->state = LLACE_IIR_STATE_SUSPENDED;
@@ -468,7 +468,7 @@ llace_error_t llace_iir_suspend(llace_iir_context_t *ctx) {
 
 llace_error_t llace_iir_resume(llace_iir_context_t *ctx) {
   if (!ctx || ctx->state != LLACE_IIR_STATE_SUSPENDED) {
-    return LLACE_ERROR_INVLMOD;
+    return LLACE_ERROR_BADARG;
   }
   
   ctx->state = LLACE_IIR_STATE_RUNNING;
@@ -835,7 +835,7 @@ llace_error_t llace_iir_eval_const(llace_iir_context_t *ctx, const llace_value_t
   
   // TODO: Implement constant expression evaluation
   LLACE_TODO("Constant expression evaluation not implemented");
-  return LLACE_ERROR_INVLMOD;
+  return LLACE_ERROR_BADARG;
 }
 
 const char *llace_iir_state_str(llace_iir_state_t state) {
