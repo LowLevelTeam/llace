@@ -9,7 +9,7 @@ llace_error_t llace_instr_create(llace_instr_t *instr) {
   
   memset(instr, 0, sizeof(llace_instr_t));
   instr->opcode = LLACE_OP_NULL; // Default to safe opcode
-  instr->params = LLACE_NEW_ARRAY(sizeof(llace_value_t), 2);
+  instr->params = LLACE_NEW_ARRAY(llace_value_t, 2);
 
   return LLACE_ERROR_NONE;
 }

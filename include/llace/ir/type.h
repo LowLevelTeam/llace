@@ -21,7 +21,7 @@ typedef enum {
   LLACE_TYPE_STRUCT,
   LLACE_TYPE_UNION,
   LLACE_TYPE_FUNCTION,
-  LLACE_TYPE_VARADIC,
+  LLACE_TYPE_VARADIC
 } llace_type_kind_t;
 
 // Type structure

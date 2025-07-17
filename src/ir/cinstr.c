@@ -12,7 +12,7 @@ llace_error_t llace_cinstr_create(llace_cinstr_t *instr) {
   
   memset(instr, 0, sizeof(llace_cinstr_t));
   instr->opcode = LLACE_COP_NULL; // Default to safe opcode
-  instr->params = LLACE_NEW_ARRAY(sizeof(llace_value_t), 2);
+  instr->params = LLACE_NEW_ARRAY(llace_value_t, 2); // standard parameter size for operands
 
   return LLACE_ERROR_NONE;
 }

@@ -16,14 +16,3 @@
 
 // The IR system provides a complete intermediate representation
 // for building and manipulating code structures in memory.
-
-// Example usage:
-// 1. Initialize a module with llace_module_init()
-// 2. Add types with llace_module_add_type()
-// 3. Add globals with llace_module_add_global()
-// 4. Add functions with llace_module_add_function()
-// 5. Build instruction sequences within functions
-// 6. Pass the complete module to code generation
-
-// All memory management is handled through the llace_mem_* system
-// to ensure efficient allocation and deallocation.

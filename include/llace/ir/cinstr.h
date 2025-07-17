@@ -41,11 +41,12 @@ typedef enum llace_copcode {
 
 typedef struct llace_cinstr {
   llace_copcode_t opcode;
-  llace_array_t params; // llace_value_t[] Operands for the instruction (zeroth index contains return value)
+  llace_array_t params; // llace_value_t[] Operands for the instruction
 } llace_cinstr_t;
 
 llace_error_t llace_cinstr_create(llace_cinstr_t *instr);
 void llace_cinstr_destroy(llace_cinstr_t *instr);
+const char *llace_cinstr_opstr(llace_copcode_t op);
 
 // ================================================ Builder ================================================ //
 

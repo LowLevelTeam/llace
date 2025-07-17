@@ -12,8 +12,8 @@ llace_error_t llace_function_init(llace_function_t *func) {
   func->name = 0;
   func->abi = LLACE_ABI_CDECL;
   func->attrval = 0;
-  func->rets   = LLACE_NEW_ARRAY(sizeof(llace_variable_t), 8);
-  func->params = LLACE_NEW_ARRAY(sizeof(llace_variable_t), 16);
+  func->rets   = LLACE_NEW_ARRAY(llace_variable_t, 1);
+  func->params = LLACE_NEW_ARRAY(llace_variable_t, 4);
   LLACE_RUNCHECK(llace_block_init(&func->block));
 
   return LLACE_ERROR_NONE;
@@ -21,7 +21,6 @@ llace_error_t llace_function_init(llace_function_t *func) {
 
 llace_error_t llace_function_destroy(llace_function_t *func) {
   if (!func) return LLACE_ERROR_BADARG;
-  
 
   LLACE_ARRAY_FOREACH(llace_variable_t, var, func->rets) {
     llace_variable_destroy(var);

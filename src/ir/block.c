@@ -9,8 +9,8 @@
 llace_error_t llace_block_init(llace_block_t *block) {
   if (!block) return LLACE_ERROR_BADARG;
 
-  block->locals = LLACE_NEW_ARRAY(sizeof(llace_variable_t), 8);
-  block->instrs = LLACE_NEW_ARRAY(sizeof(llace_instr_t), 16);
+  block->locals = LLACE_NEW_ARRAY(llace_variable_t, 0);
+  block->instrs = LLACE_NEW_ARRAY(llace_instr_t, 0);
 
   return LLACE_ERROR_NONE;
 }

@@ -12,14 +12,14 @@ int main(void) {
     2+  // memory
     2+  // config
     1+  // IR Module
-    16+ // IR Type
-    0+  // IR Child Instruction
-    0+  // IR Instruction
-    0+  // IR Block
-    0+  // IR Value
-    0+  // IR Variable
-    0+  // IR Global
-    0+  // IR Function
+    16+ // IR Type (8 standalone + 8 with module)
+    3+  // IR Child Instruction
+    3+  // IR Instruction
+    2+  // IR Block
+    4+  // IR Value
+    2+  // IR Variable
+    2+  // IR Global
+    3+  // IR Function
     0
   ;
   unsigned total_tests_passed = 0;
@@ -29,9 +29,9 @@ int main(void) {
   test_ir(&total_tests_passed);
 
   if (total_tests == total_tests_passed) {
-    LLACE_LOG_INFO("All %zu tests completed successfully!", total_tests_passed);
+    LLACE_LOG_INFO("All %u tests completed successfully!", total_tests_passed);
   } else {
-    LLACE_LOG_INFO("Total tests Failed %u", total_tests - total_tests_passed);
+    LLACE_LOG_ERROR("Total tests failed: %u", total_tests - total_tests_passed);
   }
 
   return 0;
