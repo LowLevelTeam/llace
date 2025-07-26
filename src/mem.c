@@ -97,17 +97,18 @@ void llace_mem_array_pusha(llace_array_t *arr, const void *data, size_t count) {
   arr->element_count += count;
 }
 
-void *llace_mem_array_get(llace_array_t *arr, size_t index) {
-  if (arr == NULL) { LLACE_LOG_FATAL("You passed a NULL array? Really?"); }
-  
+void *llace_mem_array_get(const llace_array_t *arr, size_t index) {
+  if (!arr) { LLACE_LOG_FATAL("You passed a NULL array? Really?"); }
+
   if (index >= arr->element_count) {
-    LLACE_LOG_FATAL("Array index out of bounds: %zu >= %zu", index, arr->element_count);
+    LLACE_LOG_DEBUG("Array index out of bounds: %zu >= %zu", index, arr->element_count);
+    return NULL;
   }
   
   return ((char*)arr->data) + (index * arr->element_size);
 }
 
-void *llace_mem_array_back(llace_array_t *arr) {
+void *llace_mem_array_back(const llace_array_t *arr) {
   if (arr == NULL) { LLACE_LOG_FATAL("You passed a NULL array? Really?"); }
   
   if (arr->element_count == 0) {
@@ -117,7 +118,7 @@ void *llace_mem_array_back(llace_array_t *arr) {
   return llace_mem_array_get(arr, arr->element_count - 1);
 }
 
-void *llace_mem_array_front(llace_array_t *arr) {
+void *llace_mem_array_front(const llace_array_t *arr) {
   if (arr == NULL) { LLACE_LOG_FATAL("You passed a NULL array? Really?"); }
   
   if (arr->element_count == 0) {

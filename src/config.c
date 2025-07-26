@@ -62,9 +62,8 @@ const char *llace_objfmt_str(llace_objfmt_t fmt) {
 
 const char *llace_abi_str(llace_abi_t abi) {
   switch (abi) {
-  case LLACE_ABI_NONE:    return "No specific ABI";
+  case LLACE_ABI_NONE:    return "No ABI (Label)";
   case LLACE_ABI_CDECL:   return "C calling convention";
-  case LLACE_ABI_STDCALL: return "Standard call";
   default: return "INVALID";
   };
 }

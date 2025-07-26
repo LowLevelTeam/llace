@@ -6887,9 +6887,9 @@ i32 main(int argc, const char *argv[]) {
     });
     AddIncludePaths(libllace_dev, "./include");
     AddFile(libllace_dev, "./src/*.c");
+    AddFile(libllace_dev, "./src/codegen/*.c");
+    AddFile(libllace_dev, "./src/detail/*.c");
     AddFile(libllace_dev, "./src/ir/*.c");
-    // AddFile(libllace_dev, "./src/builder/*.c");
-    // AddFile(libllace_dev, "./src/codegen/*.c");
     AddLibraryPaths(libllace_dev, "./build");
     InstallStaticLib(libllace_dev);
 
@@ -6903,6 +6903,8 @@ i32 main(int argc, const char *argv[]) {
     });
     AddIncludePaths(llace_test, "./include");
     AddFile(llace_test, "./test/*.c");
+    AddFile(llace_test, "./test/codegen/*.c");
+    AddFile(llace_test, "./test/ir/*.c");
     AddLibraryPaths(llace_test, "./build");
     LinkSystemLibraries(llace_test, "llace-dev");
     InstallExecutable(llace_test);

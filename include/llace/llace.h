@@ -1,8 +1,6 @@
 #ifndef LLACE_H
 #define LLACE_H
 
-#include "llace/detail/common.h"
-
 /**
 * detail/ contains implementation details used only by source files. 
 * It is not intended to be included by users of the LLACE library.

@@ -10,6 +10,7 @@ extern "C" {
 // ================ Target Architecture ================ //
 
 typedef enum {
+  LLACE_ARCH_NONE,       // Most likely an error state
   LLACE_ARCH_X86,        // 16-bit x86
   LLACE_ARCH_I386,       // 32-bit x86
   LLACE_ARCH_AMD64,      // 64-bit x86
@@ -77,9 +78,8 @@ const char *llace_objfmt_str(llace_objfmt_t);
 // ================ Target ABI ================ //
 
 typedef enum {
-  LLACE_ABI_NONE,        // No specific ABI
+  LLACE_ABI_NONE,        // No ABI
   LLACE_ABI_CDECL,       // C calling convention
-  LLACE_ABI_STDCALL,     // Standard call
 } llace_abi_t;
 
 const char *llace_abi_str(llace_abi_t);

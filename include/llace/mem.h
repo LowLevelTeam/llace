@@ -41,14 +41,17 @@ void llace_mem_freearray(llace_array_t *arr);
 void llace_mem_reserve(llace_array_t *arr, size_t element_capacity);
 void llace_mem_array_push(llace_array_t *arr, const void *data);
 void llace_mem_array_pusha(llace_array_t *arr, const void *data, size_t count);
-void *llace_mem_array_get(llace_array_t *arr, size_t index); // item at array index
-void *llace_mem_array_back(llace_array_t *arr); // end of array
-void *llace_mem_array_front(llace_array_t *arr); // beginning of array
+void *llace_mem_array_get(const llace_array_t *arr, size_t index); // item at array index
+void *llace_mem_array_back(const llace_array_t *arr); // end of array
+void *llace_mem_array_front(const llace_array_t *arr); // beginning of array
 
 // ================ Interface Macros ================ //
 
 // Allocate memory for a specific type
 #define LLACE_NEW(type) llace_mem_new(sizeof(type))
+
+// Allocate memory of a specific size
+#define LLACE_ALLOC(size) llace_mem_new(size)
 
 // Free memory item
 #define LLACE_FREE(item) llace_mem_free(item)
@@ -69,6 +72,14 @@ void *llace_mem_array_front(llace_array_t *arr); // beginning of array
 
 // Get size of individual elements in array
 #define LLACE_ARRAY_ELEMENT_SIZE(array) ((array).element_size)
+
+// Initalize array with members
+#define LLACE_INIT_ARRAY(type, capacity, ...) ({ \
+    type values = { __VA_ARGS__ }; \
+    llace_array_t arr = LLACE_NEW_ARRAY(type, sizeof(values) / sizeof(type)); \
+    LLACE_ARRAY_PUSHA(&arr, values, sizeof(values) / sizeof(type)); \
+    arr; \
+  })
 
 // Create new array for specific type with given capacity
 #define LLACE_NEW_ARRAY(type, capacity) llace_mem_newarray(sizeof(type), capacity)
@@ -97,9 +108,7 @@ void *llace_mem_array_front(llace_array_t *arr); // beginning of array
 // Iterate over array elements
 #define LLACE_ARRAY_FOREACH(type, var_name, array) \
   for (size_t _llace_i = 0; _llace_i < LLACE_ARRAY_COUNT(array); ++_llace_i) \
-    for (type *var_name = LLACE_ARRAY_GET(type, array, _llace_i); \
-         var_name != NULL; \
-         var_name = NULL)
+    for (type *var_name = LLACE_ARRAY_GET(type, array, _llace_i); var_name != NULL; var_name = NULL)
 
 // Check if array is empty
 #define LLACE_ARRAY_IS_EMPTY(array) (LLACE_ARRAY_COUNT(array) == 0)

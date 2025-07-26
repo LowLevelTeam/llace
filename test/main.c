@@ -2,7 +2,6 @@
 
 extern void test_config(unsigned*);
 extern void test_mem(unsigned*);
-extern void test_ir(unsigned*);
 
 int main(void) {
   LLACE_LOG_INFO("LLACE (Low Level Assembly & Compilation Engine) Tests");
@@ -11,28 +10,22 @@ int main(void) {
   unsigned total_tests =
     2+  // memory
     2+  // config
-    1+  // IR Module
-    16+ // IR Type (8 standalone + 8 with module)
-    3+  // IR Child Instruction
-    3+  // IR Instruction
-    2+  // IR Block
-    4+  // IR Value
-    2+  // IR Variable
-    2+  // IR Global
-    3+  // IR Function
     0
   ;
   unsigned total_tests_passed = 0;
 
+  LLACE_LOG_INFO("Running memory tests...");
   test_mem(&total_tests_passed);
+  
+  LLACE_LOG_INFO("Running configuration tests...");
   test_config(&total_tests_passed);
-  test_ir(&total_tests_passed);
 
+  LLACE_LOG_INFO("========================================================");
   if (total_tests == total_tests_passed) {
     LLACE_LOG_INFO("All %u tests completed successfully!", total_tests_passed);
+    return 0;
   } else {
-    LLACE_LOG_ERROR("Total tests failed: %u", total_tests - total_tests_passed);
+    LLACE_LOG_ERROR("Tests failed: %u/%u passed", total_tests_passed, total_tests);
+    return 1;
   }
-
-  return 0;
 }

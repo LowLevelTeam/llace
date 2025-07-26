@@ -2,54 +2,141 @@
 
 ## Overview
 
-LLACE is a modern compiler infrastructure and toolchain designed as a lightweight, efficient alternative to LLVM. Built entirely in C, LLACE prioritizes simplicity, speed, and maintainability while providing a complete compilation pipeline from source code to machine code.
+LLACE is a modern compiler infrastructure and toolchain designed as a lightweight, efficient alternative to LLVM. Built entirely in C, LLACE prioritizes simplicity, speed, and maintainability while providing a complete compilation pipeline from source code to machine code through a sophisticated multi-stage Intermediate Representation (IR) system.
 
-To utilize the LLACE project make use of the static development library 'libllace-dev' made to be easily integratable into compilers. Thanks to being written in C only simple wrappers will be needed to make this work with your own custom language or the hgih level language you wish to use.
+To utilize the LLACE project, make use of the static development library 'libllace-dev' designed to be easily integratable into compilers. Thanks to being written in C, only simple wrappers will be needed to make this work with your own custom language or high-level language of choice.
 
 ## Why LLACE?
 
-- **Simplicity**: Clean C codebase with minimal abstractions
-- **Performance**: Optimized for fast compilation times
-- **Efficiency**: Smaller memory footprint and binary size
-- **Modularity**: Clear separation between compilation phases
-- **Learning-Focused**: Designed for educational purposes and experimentation
+- **Multi-Stage IR Design**: Three-tier IR system balancing semantic preservation with optimization power
+- **Future-Proof Type System**: Abstract bitwidth integers, floating-point formats, and extensible vector types
+- **Clean Separation**: Distinct phases for frontend construction, optimization, and target-specific code generation
+- **Performance**: Optimized for fast compilation times with efficient memory usage
+- **Modularity**: Each compilation stage has clear responsibilities and interfaces
+- **Learning-Focused**: Designed for educational purposes and compiler research
 
 ## Architecture
 
-LLACE is built around a streamlined Intermediate Representation (IR) system with three core phases:
+LLACE employs a sophisticated three-stage IR architecture that addresses the fundamental tension between semantic preservation and optimization enablement:
 
 ```
-[Configuration] -> [Building] -> [Optimizing] -> [Generation]
-    (optional)
+Source Code → High-Level IR → SSA IR → Target-Specific Codegen → Machine Code
+             (Semantic)     (Optimizable)    (Realizable)
 ```
 
-### Configuration (Optional)
-Custom configuration scripts allow fine-grained control over the compilation process without relying on complex command-line arguments. This provides flexibility for advanced users while keeping the default interface simple.
+### Stage 1: High-Level IR (Semantic Preservation)
+**Key Principle**: *"What the programmer meant, not how to execute it"*
 
-### Building
-The building phase transforms source code into LLACE's high-level IR. This stage focuses on minimal abstractions, making the IR both human-readable and efficient to process.
+The High-Level IR maintains source language constructs and programmer intent:
 
-### Optimizing
-Multiple optimization passes can be applied based on compilation flags or custom configurations. The modular design allows users to select specific optimizations or create custom optimization pipelines.
+- **Rich Type Abstraction**: Supports arbitrary bitwidths (`i37`, `i127`), abstract floating-point formats (`f23.8`, `f52.11`), and extensible vector types (`vec8<i13>`)
+- **Structural Control Flow**: Preserves `while`, `for`, `if-else` as semantic units rather than basic blocks
+- **Nested Expressions**: Tree-based expression evaluation with embedded instructions
+- **Scoped Symbol Resolution**: Block-based variable scoping with semantic meaning
+- **Future-Proofing**: Extensible for new hardware features like tensors, fixed-point arithmetic, and custom SIMD operations
 
-### Generation
-The final code generation phase uses a target-specific architecture where each platform has its own dedicated code generator. This approach ensures optimal code quality while maintaining clear separation between architectures.
+```c
+// Example: High-level IR representation
+struct hl_while_node {
+  hl_expr_t *condition;     // Complex expression tree
+  hl_block_t *body;         // Nested statements
+  optimization_hints_t hints; // Vectorization potential, etc.
+};
 
-#### Target System
-Unlike traditional target triplets, LLACE uses a more intuitive target specification system. Each architecture maintains its own code generator responsible for:
+struct hl_type {
+  type_kind_t kind;
+  union {
+    struct { size_t bitwidth; } integer;        // i37, i127, etc.
+    struct { size_t mantissa, exponent; } float; // f19.8, f52.11, etc.
+    struct { hl_type_t *element; size_t count; } vector; // vec8<i13>
+  };
+};
+```
 
-- Machine code generation
-- Object file formatting (ELF, Mach-O, PE, etc.)
-- Architecture-specific optimizations
+### Stage 2: SSA IR (Optimization-Focused)
+**Key Principle**: *"Optimizable representation of programmer intent"*
 
-**Shared Components**: Common object format implementations are located in `src/detail/` to avoid duplication across architectures (i386, amd64, ARM32, ARM64).
+The SSA IR enables sophisticated optimizations while preserving type semantics:
 
-**Virtual Machine Targets**: Support for VM targets (UXN, WebAssembly, JVM) with specialized generators that don't require traditional object formats.
+- **Control Flow Graph**: Explicit basic blocks, phi nodes, and dominance relationships
+- **Single Static Assignment**: Every value has a single definition with clear use-def chains
+- **Type-Preserving Lowering**: Abstract types flow through but expressions are flattened
+- **Target-Independent Optimization**: Dead code elimination, common subexpression elimination, loop optimizations
+- **Capability Hints**: Annotations for vectorization potential, library call requirements, and hardware features
+
+```c
+// Example: SSA IR with preserved type information
+%0 = vector_add vec4<i13> %a, %b  // Single SSA instruction
+                                  // Type info preserved for target query
+```
+
+### Stage 3: Target-Specific Codegen (Hardware Realization)
+**Key Principle**: *"Optimal implementation for specific hardware"*
+
+Target-specific code generators make final implementation decisions:
+
+- **Hardware Capability Queries**: Runtime decisions based on actual target features
+- **Type Realization**: Abstract types mapped to concrete hardware representations
+- **Instruction Selection**: Complex operations broken down to target instruction sets
+- **Architecture-Specific Optimizations**: Peephole optimizations, instruction scheduling
+- **Object Format Generation**: ELF, Mach-O, PE, WebAssembly, etc.
+
+```c
+// Example: Target-specific decision making
+llace_error_t wasm32_gen_instruction(ssa_instruction_t *inst) {
+  switch(inst->opcode) {
+    case SSA_VECTOR_ADD:
+      if (wasm_supports_simd() && is_native_vector_width(inst->result_type)) {
+        emit_wasm_v128_add();
+      } else {
+        emit_scalarized_loop();  // Graceful fallback
+      }
+      break;
+  }
+}
+```
+
+## Supported Targets
+
+LLACE uses an intuitive target specification system where each architecture maintains its own code generator:
+
+### Native Architectures
+- **x86**: 16-bit x86 with full instruction set support
+- **i386**: 32-bit x86 with full instruction set support
+- **AMD64**: 64-bit x86 with AVX/SSE optimizations
+- **ARM32/ARM64**: ARM architectures with NEON support
+- **RISC-V 32/64**: Open instruction set architecture
+- **MIPS 32/64**: Classic RISC architecture
+- **SPARC 32/64**: Sun SPARC processors
+- **PowerPC 32/64**: IBM PowerPC architecture
+
+### Virtual Machine Targets
+- **WebAssembly (WASM32/64)**: Browser and server deployment
+- **UXN Virtual Machine**: Ultra-minimal computing platform
+- **Java Virtual Machine (JVM)**: Bytecode generation for JVM languages
+
+### Object Format Support
+- **ELF**: Linux, BSD systems (32/64-bit)
+- **Mach-O**: macOS, iOS (32/64-bit)
+- **PE/PE+**: Windows executables (32/64-bit)
+- **COFF/XCOFF**: Common object formats
+- **Raw Binary**: Embedded and bare-metal targets
+
+## Benefits of LLACE's Architecture
+
+1. **Future-Proof**: New hardware features only require SSA IR opcode additions and target-specific codegen
+2. **Optimization-Friendly**: SSA IR enables all standard optimizations while preserving semantic types
+3. **Clean Separation**: Each stage has clear responsibilities and well-defined interfaces
+4. **Target Flexibility**: Code generators make final realization decisions based on actual capabilities
+5. **Debugging Support**: Can trace execution from source → high-level IR → SSA IR → machine code
+6. **Semantic Preservation**: High-level constructs maintained throughout the compilation pipeline
 
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
 - Code style guidelines
+- Multi-stage IR development
+- Target architecture implementation
 - Testing procedures
 - Submission process
 
@@ -59,8 +146,8 @@ LLACE is released under the UnLicense. See [LICENSE](LICENSE) for details.
 
 ## Team
 
-LLACE is developed by the Low Level Team (LLT), a group of engineers focused on creating efficient, modern compiler infrastructure.
+LLACE is developed by the Low Level Team (LLT), a group of engineers focused on creating efficient, modern compiler infrastructure that balances theoretical soundness with practical implementation needs.
 
 ## Acknowledgments
 
-While LLACE is an independent project, we acknowledge the pioneering work of the LLVM project in advancing compiler infrastructure design.
+While LLACE is an independent project, we acknowledge the pioneering work of LLVM, GCC, and other compiler infrastructures in advancing the field of compilation technology. LLACE builds upon these lessons while exploring new approaches to IR design and optimization.
